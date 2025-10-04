@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model version="6.2.3" links="1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.state-machine.com/qm/qm.xsd">
+ <documentation>About this example:
+-------------------
+Simple &quot;Blinky&quot; console application for workstations (Windows, Linux, MacOS)
+(see &quot;QM Tutorial&quot; at: https://www.state-machine.com/qm/gs_tut.html)
+
+This example demonstrates:
+- Active object (Blinky) with state machine
+- Board Support Package abstraction for portability
+- BSP implementation for desktop OS (Windows, Linux, MacOS)
+- Platform-independent main() function
+- Makefile to build the generated code on desktop OS (Windows, Linux, MacOS)
+- Customized tools for building the generated code directly from QM
+
+Building the example:
+---------------------
+To build this example, you will need the QP/C framework installed on your computer and the GNU-GCC compiler. Both of them will be available if you install the QP-bundle from:
+
+https://www.state-machine.com/#Downloads
+
+Running the example:
+--------------------
+This example is a simple console application, which you can run from a terminal.
+
+For more QM examples for QP/C see:
+https://www.state-machine.com/qpc/exa.html</documentation>
+ <!--${qpc}-->
+ <framework name="qpc"/>
+ <!--${CPU1}-->
+ <package name="CPU1" stereotype="0x00">
+  <!--${CPU1::AOs}-->
+  <package name="AOs" stereotype="0x02">
+   <!--${CPU1::AOs::AO_BLINKY}-->
+   <package name="AO_BLINKY" stereotype="0x00">
+    <!--${CPU1::AOs::AO_BLINKY::blinky}-->
+    <class name="blinky" superclass="qpc::QActive">
+     <!--${CPU1::AOs::AO_BLINKY::blinky::time_evt}-->
+     <attribute name="time_evt" type="QTimeEvt" visibility="0x02" properties="0x00"/>
+     <!--${CPU1::AOs::AO_BLINKY::blinky::led_on}-->
+     <operation name="led_on" type="void" visibility="0x00" properties="0x00"/>
+     <!--${CPU1::AOs::AO_BLINKY::blinky::led_off}-->
+     <operation name="led_off" type="void" visibility="0x00" properties="0x00"/>
+     <!--${CPU1::AOs::AO_BLINKY::blinky::SM}-->
+     <statechart properties="0x03">
+      <documentation>Blinky state machine</documentation>
+      <!--${CPU1::AOs::AO_BLINKY::blinky::SM::initial}-->
+      <initial target="../1">
+       <action>QTimeEvt_armX(&amp;me-&gt;time_evt,500, 500);</action>
+       <initial_glyph conn="2,3,5,1,20,4,-4">
+        <action box="0,-2,6,2"/>
+       </initial_glyph>
+      </initial>
+      <!--${CPU1::AOs::AO_BLINKY::blinky::SM::off}-->
+      <state name="off">
+       <entry>blinky_led_off(me);</entry>
+       <!--${CPU1::AOs::AO_BLINKY::blinky::SM::off::TIMEOUT}-->
+       <tran trig="TIMEOUT" target="../../2">
+        <tran_glyph conn="2,13,3,1,18,6,-2">
+         <action box="0,-2,8,2"/>
+        </tran_glyph>
+       </tran>
+       <state_glyph node="2,5,16,10">
+        <entry box="1,2,12,4"/>
+       </state_glyph>
+      </state>
+      <!--${CPU1::AOs::AO_BLINKY::blinky::SM::on}-->
+      <state name="on">
+       <entry>blinky_led_on(me);</entry>
+       <!--${CPU1::AOs::AO_BLINKY::blinky::SM::on::TIMEOUT}-->
+       <tran trig="TIMEOUT" target="../../1">
+        <tran_glyph conn="2,25,3,1,20,-15,-4">
+         <action box="0,-2,8,2"/>
+        </tran_glyph>
+       </tran>
+       <state_glyph node="2,17,16,10">
+        <entry box="1,2,12,4"/>
+       </state_glyph>
+      </state>
+      <state_diagram size="24,29"/>
+     </statechart>
+    </class>
+    <!--${CPU1::AOs::AO_BLINKY::inst_ao_blinky}-->
+    <attribute name="inst_ao_blinky" type="blinky" visibility="0x01" properties="0x00"/>
+    <!--${CPU1::AOs::AO_BLINKY::globals}-->
+    <package name="globals" stereotype="0x00">
+     <!--${CPU1::AOs::AO_BLINKY::globals::p_ao_blinky}-->
+     <attribute name="p_ao_blinky" type="QActive * const" visibility="0x00" properties="0x00">
+      <code>= &amp;inst_ao_blinky.super;</code>
+     </attribute>
+     <!--${CPU1::AOs::AO_BLINKY::globals::ao_blinky_ctor}-->
+     <operation name="ao_blinky_ctor" type="void" visibility="0x00" properties="0x00">
+      <!--${CPU1::AOs::AO_BLINKY::globals::ao_blinky_ctor::pAO}-->
+      <parameter name="pAO" type="const QActive  * const"/>
+      <code>// Active Objects
+blinky * const me = (blinky *) pAO;
+QActive_ctor(&amp;me-&gt;super, Q_STATE_CAST(&amp;blinky_initial));
+
+// Time Events
+QTimeEvt_ctorX(&amp;me-&gt;time_evt, &amp;me-&gt;super, TIMEOUT_SIG, 0U);
+
+// Vars</code>
+     </operation>
+    </package>
+   </package>
+  </package>
+  <!--${CPU1::Signals}-->
+  <package name="Signals" stereotype="0x00">
+   <!--${CPU1::Signals::private_signals}-->
+   <attribute name="private_signals" type="enum" visibility="0x04" properties="0x00">
+    <code>{
+// Publish Subscribe Signals
+    FIRST_PUB_SIG = Q_USER_SIG,
+
+    MAX_PUB_SIG,
+
+    // Common Signals
+    TIMEOUT_SIG,
+
+    MAX_PRIVATE_SIG,
+};</code>
+   </attribute>
+  </package>
+  <!--${CPU1::OC_enum}-->
+  <package name="OC_enum" stereotype="0x00"/>
+  <!--${CPU1::Immutable_Events}-->
+  <package name="Immutable_Events" stereotype="0x00">
+   <!--${CPU1::Immutable_Events::General}-->
+   <package name="General" stereotype="0x00"/>
+  </package>
+  <!--${CPU1::ao_priority}-->
+  <attribute name="ao_priority" type="enum" visibility="0x04" properties="0x00">
+   <code>{
+    // Priority in ascendance order
+    IDLE_TASK=0U,
+    AO_BLINKY_PRIO,
+};</code>
+  </attribute>
+ </package>
+ <!--${.}-->
+ <directory name=".">
+  <!--${.::AOs}-->
+  <directory name="AOs">
+   <!--${.::AOs::blinky.h}-->
+   <file name="blinky.h">
+    <text>#ifndef BLINKY_H_
+#define BLINKY_H_
+
+#include &quot;main_qm.h&quot;
+
+// Orthogonal Component
+
+
+// Declare your AO:
+
+$declare${CPU1::AOs::AO_BLINKY}
+
+#endif // BLINKY_H_</text>
+   </file>
+  </directory>
+ </directory>
+</model>
