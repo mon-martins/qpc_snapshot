@@ -207,14 +207,14 @@ def generate_qp_snapshot_files(paths_to_search):
             # Function implementation in source
 
             for func_name in function_names:
-                source_file.write(f'extern QState * {func_name}(void * const me, QEvt const * const e);\n')
-            header_file.write("\n")
+                source_file.write(f'extern QState {func_name}(void * const me, QEvt const * const e);\n')
+            source_file.write("\n")
 
             source_file.write(f"uint64_t {file_base}_get_current_state(QAsm const * const state_machine) {{\n")
             source_file.write("    uint64_t current_state = 0;\n")
 
             for func_name in function_names:
-                source_file.write(f"    current_state |= ((uint64_t) QASM_IS_IN(state_machine, {func_name}) << {func_name.upper()});\n")
+                source_file.write(f"    current_state |= ((uint64_t) QHsm_isIn(state_machine, {func_name}) << {func_name.upper()});\n")
 
             source_file.write("    return current_state;\n")
             source_file.write("}\n")
